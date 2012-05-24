@@ -1,41 +1,6 @@
 ﻿using System;
 
 namespace ProjectStructure.API {
-    public static class ProjectEvents {
-        public const string Error = "topic://dchem/project/error";
-
-        public static class Folder {
-            public const string Added = "topic://dchem/project/directory/added";
-            public const string Deleted = "topic://dchem/project/directory/deleted";
-            public const string Renamed = "topic://dchem/project/directory/renamed";
-            public const string Selected = "topic://dchem/project/directory/selected";
-            public const string Deselected = "topic://dchem/project/directory/deselected";
-            public const string Refreshed = "topic://dchem/project/directory/refreshed";
-            public const string Moved = "topic://dchem/project/directory/moved";
-        }
-
-        public static class File {
-            public const string DirtyTextChanged = "topic://dchem/project/file/dirty-text-changed";
-            public const string Added = "topic://dchem/project/file/added";
-            public const string Deleted = "topic://dchem/project/file/deleted";
-            public const string Renamed = "topic://dchem/project/file/renamed";
-            public const string Moved = "topic://dchem/project/file/moved";
-            public const string Modified = "topic://dchem/project/file/modified";
-            public const string Saved = "topic://dchem/project/file/saved";
-        }
-
-        public static class Project {
-            public const string Closed = "topioc://dchem/project/closed";
-            public const string LoadingStarted = "topic://dchem/project/loading-started";
-            public const string LoadingFinished = "topic://dchem/project/loading-finished";
-            public const string LoadingProgress = "topic://dchem/project/loading-progress";
-        }
-
-        public static class IO {
-            public const string FileLoaded = "topic://dchem/project/io/file-loaded";
-        }
-    }
-
     public class ProjectIOFileLoadedEventArgs : EventArgs {
         public string FileName { get; private set; }
         public ProjectIOFileLoadedEventArgs(string filename) {
