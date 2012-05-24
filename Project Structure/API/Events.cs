@@ -48,20 +48,6 @@ namespace ProjectStructure.API {
         }
     }
 
-    public class FolderSelectedEventArgs : EventArgs {
-        public IFolderNode FolderNode { get; set; }
-        public FolderSelectedEventArgs(IFolderNode dir) {
-            FolderNode = dir;
-        }
-    }
-
-    public class FolderDeselectedEventArgs : EventArgs {
-        public IFolderNode FolderNode { get; set; }
-        public FolderDeselectedEventArgs(IFolderNode dir) {
-            FolderNode = dir;
-        }
-    }
-
     public class FolderMovedEventArgs : EventArgs {
         public IFolderNode FolderNode { get; private set; }
         public FolderMovedEventArgs(IFolderNode node) {

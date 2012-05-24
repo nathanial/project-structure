@@ -48,22 +48,16 @@ namespace ProjectStructure.API {
     public interface IFolderNode : IProjectNode {
         event EventHandler<FolderDeletedEventArgs> Deleted;
         event EventHandler<FolderRenamedEventArgs> Renamed;
-        event EventHandler<FolderSelectedEventArgs> Selected;
-        event EventHandler<FolderDeselectedEventArgs> Deselected;
         event EventHandler<DirectoryRefreshedEventArgs> Refreshed;
         event EventHandler<FolderMovedEventArgs> Moved;
 
-        void CreateSubFolder(string name);
-        void CreateFile(string name, string content);
-        void CreateFile(string name, byte[] content);
+        IFolderNode CreateSubFolder(string name);
+        IFileNode CreateFile(string name, string content);
+        IFileNode CreateFile(string name, byte[] content);
         
-        void Select();
-        void Deselect();
-
         void Refresh();
         void SoftRefresh();
         
-        bool IsSelected { get; }
         bool IsDeleted { get; }
         bool IsRootNode { get; }
     }
@@ -140,10 +134,6 @@ namespace ProjectStructure.API {
     public interface INodeFactory {
         IFolderNode CreateFolderNode(string dirpath);
         IFileNode CreateFileNode(string file);
-    }
-
-    public interface IProjectIOFactory {
-        IProjectIO CreateIO(string projectPath);
     }
 
 

@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1F3E43A9-008E-43D2-A72B-8F801E9D8065}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{FC96D432-C737-492F-8187-D704E85933AF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProjectStructure</RootNamespace>
-    <AssemblyName>Project Structure</AssemblyName>
+    <RootNamespace>Sample</RootNamespace>
+    <AssemblyName>Sample</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -33,9 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,16 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\Events.cs" />
-    <Compile Include="API\FolderExtensions.cs" />
-    <Compile Include="API\Interfaces.cs" />
-    <Compile Include="Impl\NodeFactory.cs" />
-    <Compile Include="Impl\EventExtensions.cs" />
-    <Compile Include="Impl\FileNode.cs" />
-    <Compile Include="Impl\FolderNode.cs" />
-    <Compile Include="Impl\ProjectIO.cs" />
-    <Compile Include="Impl\Project.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Project Structure\Project Structure.csproj">
+      <Project>{1F3E43A9-008E-43D2-A72B-8F801E9D8065}</Project>
+      <Name>Project Structure</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Project.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

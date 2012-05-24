@@ -25,6 +25,10 @@ namespace ProjectStructure.Impl {
             _io.WatchFile(this, FilePath, RaiseModified);
         }
 
+        public override string ToString() {
+            return FilePath;
+        }
+
         protected string FilePath { get; set; }
 
         public string AbsolutePath {

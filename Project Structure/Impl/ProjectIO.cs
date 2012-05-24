@@ -108,15 +108,13 @@ namespace ProjectStructure.Impl {
     }
 
 
-    class ProjectIO : IProjectIO {
+    public class ProjectIO : IProjectIO {
         public event EventHandler<ProjectIOFileLoadedEventArgs> FileLoaded;
 
         readonly string _projectPath;
 
         readonly IDictionary<string, string> _cache = new Dictionary<string, string>();
-
         readonly IDictionary<WatcherKey, IWatcher> _watchers = new Dictionary<WatcherKey, IWatcher>();
-
         readonly IDictionary<string, string> _virtualFolders = new Dictionary<string, string>();
 
         public ProjectIO(string projectPath) {

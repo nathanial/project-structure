@@ -1,14 +1,16 @@
-﻿using System.Xml.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Xml.Linq;
 using ProjectStructure.API;
 
 namespace ProjectStructure.Impl {
-    public abstract class Project : FolderNode, IProject {
+    public class Project : FolderNode, IProject {
         readonly IProjectIO _io;
         readonly INodeFactory _nodeFactory;
         XDocument _doc;
         readonly string _projectFile;
 
-        protected Project(string projectFile, IProjectIO projectIO, INodeFactory nodeFactory)
+        public Project(string projectFile, IProjectIO projectIO, INodeFactory nodeFactory)
             : base(projectIO, nodeFactory, ".", true) {
             _projectFile = projectFile;
             _io = projectIO;
@@ -47,11 +49,28 @@ namespace ProjectStructure.Impl {
             Children.Insert(0, vnode);
 
             if (addToDoc) {
-                _doc.Element("Test-Project").Add(new XElement("Virtual-Folder", path));
+                _doc.Element("Project").Add(new XElement("Virtual-Folder", path));
                 Save();
             }
         }
 
+    }
+
+    public class ProjectBuilder {
+        readonly IList<IFileProvider> _providers = new List<IFileProvider>();
+
+        public IProject Build(string path) {
+            var io = new ProjectIO(Path.GetDirectoryName(path));
+            var nfac = new NodeFactory(io) { IgnoreUnknownFiles = IgnoreUnknownFiles};
+            foreach (var p in _providers) nfac.Register(p);
+            return new Project(path, io, nfac);            
+        }
+
+        public void Register(IFileProvider provider) {
+            _providers.Add(provider);
+        }
+
+        public bool IgnoreUnknownFiles { get; set; }
     }
 
 }

@@ -23,8 +23,15 @@ namespace ProjectStructure.API {
             return "New Folder";
         }
 
+        public static IList<IFolderNode> Subfolders(this IFolderNode node) {
+            return node.Children.OfType<IFolderNode>().ToList();
+        }
 
-        static int FindLastNewFolder(IList<IFolderNode> subdirs) {
+        public static IList<IFileNode> Files(this IFolderNode node) {
+            return node.Children.OfType<IFileNode>().ToList();
+        } 
+
+        static int FindLastNewFolder(IEnumerable<IFolderNode> subdirs) {
             var regex = new Regex(@".* \((\d+)\)");
             var matches = subdirs.Where(x => regex.IsMatch(x.Name));
             var indexes = new List<int>();
@@ -34,6 +41,5 @@ namespace ProjectStructure.API {
             }
             return indexes.Count > 0 ? indexes.Max() : 0;
         }
-
     }
 }
