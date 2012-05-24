@@ -3,9 +3,44 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ProjectStructure.API;
 
-namespace ProjectStructure.Impl {
+namespace ProjectStructure {
+    public interface IProjectIO {
+        event EventHandler<ProjectIOFileLoadedEventArgs> FileLoaded;
+
+        void Move(string oldPath, string newPath);
+        void Delete(string file);
+        string CachedReadText(string file);
+        byte[] CachedReadRaw(string file);
+
+        void WriteFile(string filePath, string content);
+        void CreateDirectory(string path);
+
+        IList<string> ListFiles(string dirpath = null);
+        IList<string> ListDirectories(string dirpath = null);
+
+        void WatchFile(object watcher, string file, FileChangeHandler action);
+        void UnwatchFile(object watcher, string file);
+
+        void WatchDirectory(object watcher, string dirpath, DirectoryChangeHandler action);
+        void UnwatchDirectory(object watcher, string dirpath);
+        DateTime FileCreationTime(string file);
+        DateTime DirectoryCreationTime(string directory);
+
+        void RunWatchers();
+        DateTime DirectoryLastWriteTime(string dirpath);
+        DateTime FileLastWriteTime(string filepath);
+        bool FileExists(string filepath);
+        string RootName { get; }
+
+        void OpenInExplorer(IProjectNode node);
+        void AddVirtualFolder(string path);
+        void CreateFile(string filepath, string content);
+        void CreateFile(string filepath, byte[] content);
+        byte[] ReadBytes(string path);
+        string GetAbsolutePath(string path);
+    }
+
 
     class WatcherKey : Tuple<object, string> {
         public object Object { get; set; }
@@ -388,6 +423,10 @@ namespace ProjectStructure.Impl {
     public class ProjectPathException : Exception { }
 
     public class VirtualFolderException : Exception { }
+
+    public class FolderDeletedException : Exception { }
+
+    public class RecursiveFolderException : Exception { }
 
 
 }

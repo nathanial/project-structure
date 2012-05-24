@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace ProjectStructure.API {
+namespace ProjectStructure {
     public static class ProjectNodeExtensions {
         public static IFolderNode GetProjectParent(this IProjectNode node) {
             var folder = node as IFolderNode;

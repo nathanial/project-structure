@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
-using ProjectStructure.API;
-using ProjectStructure.Impl;
+using ProjectStructure;
 
 namespace Sample {
     class Program {

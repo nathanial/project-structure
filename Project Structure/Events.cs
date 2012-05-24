@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace ProjectStructure.API {
+namespace ProjectStructure {
     public class ProjectIOFileLoadedEventArgs : EventArgs {
         public string FileName { get; private set; }
         public ProjectIOFileLoadedEventArgs(string filename) {
@@ -109,5 +110,42 @@ namespace ProjectStructure.API {
             Project = project;
         }
     }
+
+    public class DirectoryChangeEventArgs : EventArgs {
+        public IList<string> AddedFiles { get; set; }
+
+        public IList<string> AddedDirectories { get; set; }
+
+        public bool Deleted { get; set; }
+
+        public DirectoryChangeEventArgs() {
+            AddedFiles = new List<string>();
+            AddedDirectories = new List<string>();
+        }
+    }
+
+    public class FileChangeEventArgs : EventArgs {
+        public FileChangeType Type { get; set; }
+        public string FilePath { get; set; }
+
+        public FileChangeEventArgs(FileChangeType type, string filePath) {
+            Type = type;
+            FilePath = filePath;
+        }
+    }
+
+    public class CouldNotOpenProjectException : Exception { }
+
+    public enum FileChangeType {
+        Modified,
+        Deleted
+    }
+
+
+    public delegate void DirectoryChangeHandler(DirectoryChangeEventArgs args);
+
+
+    public delegate void FileChangeHandler(FileChangeEventArgs args);
+
 
 }

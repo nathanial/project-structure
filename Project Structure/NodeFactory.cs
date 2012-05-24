@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ProjectStructure.API;
 
-namespace ProjectStructure.Impl {
+namespace ProjectStructure {
+    public interface INodeFactory {
+        IFolderNode CreateFolderNode(string dirpath);
+        IFileNode CreateFileNode(string file);
+    }
+
+
     public interface IFileProvider {
         string[] Extensions { get; }
         IFileNode Create(string path, IProjectIO io);

@@ -46,15 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\Events.cs" />
-    <Compile Include="API\FolderExtensions.cs" />
-    <Compile Include="API\Interfaces.cs" />
-    <Compile Include="Impl\NodeFactory.cs" />
-    <Compile Include="Impl\EventExtensions.cs" />
-    <Compile Include="Impl\FileNode.cs" />
-    <Compile Include="Impl\FolderNode.cs" />
-    <Compile Include="Impl\ProjectIO.cs" />
-    <Compile Include="Impl\Project.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="FolderExtensions.cs" />
+    <Compile Include="NodeFactory.cs" />
+    <Compile Include="EventExtensions.cs" />
+    <Compile Include="FileNode.cs" />
+    <Compile Include="FolderNode.cs" />
+    <Compile Include="ProjectIO.cs" />
+    <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

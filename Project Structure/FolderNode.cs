@@ -3,9 +3,25 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using ProjectStructure.API;
 
-namespace ProjectStructure.Impl {
+namespace ProjectStructure {
+    public interface IFolderNode : IProjectNode {
+        event EventHandler<FolderDeletedEventArgs> Deleted;
+        event EventHandler<FolderRenamedEventArgs> Renamed;
+        event EventHandler<DirectoryRefreshedEventArgs> Refreshed;
+        event EventHandler<FolderMovedEventArgs> Moved;
+
+        IFolderNode CreateSubFolder(string name);
+        IFileNode CreateFile(string name, string content);
+        IFileNode CreateFile(string name, byte[] content);
+
+        void Refresh();
+        void SoftRefresh();
+
+        bool IsDeleted { get; }
+        bool IsRootNode { get; }
+    }
+
     public class FolderNode : IFolderNode {
         public event EventHandler<FolderDeletedEventArgs> Deleted;
         public event EventHandler<FolderRenamedEventArgs> Renamed;

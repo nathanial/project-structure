@@ -2,9 +2,28 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using ProjectStructure.API;
 
-namespace ProjectStructure.Impl {
+namespace ProjectStructure {
+    public interface IFileNode : IProjectNode {
+        event EventHandler<FileDeletedEventArgs> Deleted;
+        event EventHandler<FileRenamedEventArgs> Renamed;
+        event EventHandler<FileMovedEventArgs> Moved;
+        event EventHandler<FileModifiedEventArgs> Modified;
+        event EventHandler<FileSavedEventArgs> Saved;
+        event EventHandler<FileDirtyTextChangedEventArgs> DirtyTextChanged;
+
+        string Text { get; }
+        string DirtyText { get; set; }
+
+        byte[] RawBytes { get; }
+
+        bool IsDirty { get; }
+        bool IsDeleted { get; }
+
+        void Save();
+        void Clean();
+    }
+
     public class FileNode : IFileNode {
         public event EventHandler<FileDeletedEventArgs> Deleted;
         public event EventHandler<FileRenamedEventArgs> Renamed;
