@@ -14,6 +14,11 @@ namespace ProjectStructure {
         IFileNode Create(string path, IProjectIO io);
     }
 
+    public interface IProjectProvider {
+        string[] Extensions { get; }
+        IProject Create(string path, IProjectIO io, INodeFactory nfac);
+    }
+
     public class NodeFactory : INodeFactory {
         readonly IProjectIO _io;
         readonly IList<IFileProvider> _providers = new List<IFileProvider>();

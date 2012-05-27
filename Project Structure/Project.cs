@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace ProjectStructure {
@@ -42,7 +43,7 @@ namespace ProjectStructure {
         }
 
         void ProcessProjectFile(string projectFile) {
-            _doc = XDocument.Parse(_io.CachedReadText(projectFile));
+            _doc = XDocument.Parse(File.ReadAllText(projectFile));
             var virtualFolders = _doc.Descendants("Virtual-Folder");
             foreach (var vfolder in virtualFolders) {
                 InternalAddVirtualFolder(vfolder.Value, false);
@@ -79,20 +80,31 @@ namespace ProjectStructure {
     }
 
     public class ProjectBuilder {
-        readonly IList<IFileProvider> _providers = new List<IFileProvider>();
+        readonly IList<IFileProvider> _fileProviders = new List<IFileProvider>();
+        readonly IList<IProjectProvider> _projectProviders = new List<IProjectProvider>();
 
         public IProject Build(string path) {
             var io = new ProjectIO(Path.GetDirectoryName(path));
             var nfac = new NodeFactory(io) { IgnoreUnknownFiles = IgnoreUnknownFiles};
-            foreach (var p in _providers) nfac.Register(p);
-            return new Project(path, io, nfac);            
+            foreach (var p in _fileProviders) nfac.Register(p);
+
+            var pprovider = FindProvider(path);
+            return pprovider.Create(path, io, nfac);
         }
 
-        public void Register(IFileProvider provider) {
-            _providers.Add(provider);
+        public void RegisterFileType(IFileProvider provider) {
+            _fileProviders.Add(provider);
+        }
+
+        public void RegisterProjectType(IProjectProvider provider) {
+            _projectProviders.Add(provider);
         }
 
         public bool IgnoreUnknownFiles { get; set; }
+
+        IProjectProvider FindProvider(string file) {
+            return _projectProviders.FirstOrDefault(x => x.Extensions.Any(file.EndsWith));
+        }
     }
 
 }

@@ -6,7 +6,7 @@ namespace Sample {
     class Program {
         static void Main(string[] args) {
             var builder = new ProjectBuilder();
-            builder.Register(new CSVFileProvider());
+            builder.RegisterFileType(new CSVFileProvider());
 
             if(Directory.Exists("Foo")) {
                 Directory.Delete("Foo",true);
