@@ -60,7 +60,7 @@ namespace ProjectStructure {
         }
 
         public void Save() {
-            _io.WriteFile(_projectFile,_doc.ToString());
+            File.WriteAllText(_projectFile, _doc.ToString());
         }
 
         protected virtual void ProcessProjectFileHook(XDocument doc) { }
