@@ -202,8 +202,8 @@ namespace ProjectStructure {
 
 
         IFileNode AddFile(string filePath) {
-            if (Children.Any(x => SamePath(x.Path, filePath))) throw new ProjectPathException();
-            if (Children.Any(x => x.Name == System.IO.Path.GetFileName(filePath))) throw new ProjectPathException();
+            if (Children.Any(x => SamePath(x.Path, filePath))) return null;
+            if (Children.Any(x => x.Name == System.IO.Path.GetFileName(filePath))) return null;
             var node = _nodeFactory.CreateFileNode(filePath);
             if (node != null) {
                 _children.Add(node);
@@ -212,8 +212,8 @@ namespace ProjectStructure {
         }
 
         IFolderNode AddDirectory(string directory) {
-            if (Children.Any(x => SamePath(x.Path, directory))) throw new ProjectPathException();
-            if (Children.Any(x => x.Name == System.IO.Path.GetFileName(directory))) throw new ProjectPathException();
+            if (Children.Any(x => SamePath(x.Path, directory))) return null;
+            if (Children.Any(x => x.Name == System.IO.Path.GetFileName(directory))) return null;
             var node = _nodeFactory.CreateFolderNode(directory);
             _children.Add(node);
             return node;
