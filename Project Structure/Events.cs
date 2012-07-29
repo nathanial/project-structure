@@ -9,28 +9,6 @@ namespace ProjectStructure {
         }
     }
 
-    public class ProjectLoadingStartedEventArgs : EventArgs {
-        public string ProjectName { get; private set; }
-        public ProjectLoadingStartedEventArgs(string name) {
-            ProjectName = name;
-        }
-    }
-    public class ProjectLoadingFinishedEventArgs : EventArgs {
-        public IProject Project { get; private set; }
-        public ProjectLoadingFinishedEventArgs(IProject project) {
-            Project = project;
-        }
-    }
-    public class ProjectLoadingProgressEventArgs : EventArgs {
-        public double Progress { get; private set; }
-        public double Total { get; private set; }
-
-        public ProjectLoadingProgressEventArgs(double progress, double total) {
-            Progress = progress;
-            Total = total;
-        }
-    }
-
     public class FolderDeletedEventArgs : EventArgs {
         public IFolderNode FolderNode { get; set; }
         public FolderDeletedEventArgs(IFolderNode dir) {
