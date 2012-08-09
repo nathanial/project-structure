@@ -43,7 +43,7 @@ namespace ProjectStructure {
         }
 
         void ProcessProjectFile(string projectFile) {
-            _doc = XDocument.Parse(File.ReadAllText(projectFile));
+            _doc = XDocument.Parse(_io.CachedReadText(projectFile));
             var virtualFolders = _doc.Descendants("Virtual-Folder");
             foreach (var vfolder in virtualFolders) {
                 InternalAddVirtualFolder(vfolder.Value, false);
