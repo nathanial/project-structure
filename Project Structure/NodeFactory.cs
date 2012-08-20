@@ -33,13 +33,7 @@ namespace ProjectStructure {
 
         public IFileNode CreateFileNode(string file) {
             var p = FindProvider(file);
-            if(p != null) {
-                return p.Create(file,_io);
-            }
-            if(IgnoreUnknownFiles) {
-                return null;
-            }
-            throw new Exception("Unknown file");
+            return p != null ? p.Create(file,_io) : null;
         }
 
         public void Register(IFileProvider provider) {
@@ -50,7 +44,6 @@ namespace ProjectStructure {
             return _providers.FirstOrDefault(x => x.Extensions.Any(file.EndsWith));
         }
 
-        public bool IgnoreUnknownFiles { get; set; }
     }
 
 }

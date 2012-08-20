@@ -85,7 +85,7 @@ namespace ProjectStructure {
 
         public IProject Build(string path) {
             var io = new ProjectIO(Path.GetDirectoryName(path));
-            var nfac = new NodeFactory(io) { IgnoreUnknownFiles = IgnoreUnknownFiles};
+            var nfac = new NodeFactory(io);
             foreach (var p in _fileProviders) nfac.Register(p);
 
             var pprovider = FindProvider(path);
@@ -99,8 +99,6 @@ namespace ProjectStructure {
         public void RegisterProjectType(IProjectProvider provider) {
             _projectProviders.Add(provider);
         }
-
-        public bool IgnoreUnknownFiles { get; set; }
 
         IProjectProvider FindProvider(string file) {
             return _projectProviders.FirstOrDefault(x => x.Extensions.Any(file.EndsWith));
