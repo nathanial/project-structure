@@ -89,7 +89,7 @@ namespace ProjectStructure {
             foreach (var p in _fileProviders) nfac.Register(p);
 
             var pprovider = FindProvider(path);
-            return pprovider.Create(path, io, nfac);
+            return pprovider.Create(Path.GetFileName(path), io, nfac);
         }
 
         public void RegisterFileType(IFileProvider provider) {

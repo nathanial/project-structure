@@ -342,10 +342,10 @@ namespace ProjectStructure {
 
         static void CheckPaths(params string[] paths) {
             if (paths.Any(Path.IsPathRooted)) {
-                throw new ProjectPathException();
+                throw new ProjectPathException("A path is rooted: " + string.Join(",",paths));
             }
             if (paths.Any(x => x.Contains(".."))) {
-                throw new ProjectPathException();
+                throw new ProjectPathException("A path contains .. : " + string.Join(",",paths));
             }
         }
 
@@ -420,7 +420,9 @@ namespace ProjectStructure {
         }
     }
 
-    public class ProjectPathException : Exception { }
+    public class ProjectPathException : Exception {
+        public ProjectPathException(string msg) : base(msg){}
+    }
 
     public class VirtualFolderException : Exception { }
 

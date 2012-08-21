@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using NLog;
 
 namespace ProjectStructure {
     public interface IFileNode : IProjectNode {
@@ -37,11 +38,13 @@ namespace ProjectStructure {
 
         readonly ObservableCollection<IProjectNode> _children = new ObservableCollection<IProjectNode>();
 
+        readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public FileNode(IProjectIO projectIO, string file) {
             _io = projectIO;
             FilePath = file;
-
             _io.WatchFile(this, FilePath, RaiseModified);
+            _logger.Trace("Created {0}: {1}", GetType().Name,file);
         }
 
         public override string ToString() {
