@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using NLog;
 
 namespace ProjectStructure {
     public interface IFolderNode : IProjectNode {
@@ -31,6 +32,8 @@ namespace ProjectStructure {
         readonly IProjectIO _io;
         readonly INodeFactory _nodeFactory;
         readonly bool _isRoot;
+
+        readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         string _dirpath;
 
@@ -253,8 +256,8 @@ namespace ProjectStructure {
                 }
                 try {
                     AddFile(file);
-                } catch {
-                    Debug.WriteLine("Could not load: " + file);
+                } catch(Exception ex) {
+                    _logger.Error("Could not load file {0} because: {1}", file, ex.Message);
                 }
             }
         }
