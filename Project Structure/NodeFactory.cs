@@ -15,7 +15,10 @@ namespace ProjectStructure {
     }
 
     public interface IProjectProvider {
-        string[] Extensions { get; }
+        string Extension { get; }
+        string Description { get; }
+        string ProjectName { get; }
+        string DefaultContents { get; }
         IProject Create(string path, IProjectIO io, INodeFactory nfac);
     }
 

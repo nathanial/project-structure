@@ -101,7 +101,7 @@ namespace ProjectStructure {
         }
 
         IProjectProvider FindProvider(string file) {
-            return _projectProviders.FirstOrDefault(x => x.Extensions.Any(file.EndsWith));
+            return _projectProviders.FirstOrDefault(x => file.EndsWith(x.Extension));
         }
     }
 
