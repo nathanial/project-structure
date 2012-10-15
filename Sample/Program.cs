@@ -16,7 +16,7 @@ namespace Sample {
             }
 
             File.WriteAllText(".\\Project.xml", "<Project></Project>");
-            var project = builder.Build(".\\Project.xml");
+            var project = builder.Build(".\\Project.xml", true);
             var foo = project.CreateSubFolder("Foo");
             var fundus = project.CreateFile("Fundus.csv", "hats");
             var ffun = foo.CreateFile("InnerFoo.csv", "Hat");

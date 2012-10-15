@@ -83,12 +83,15 @@ namespace ProjectStructure {
         readonly IList<IFileProvider> _fileProviders = new List<IFileProvider>();
         readonly IList<IProjectProvider> _projectProviders = new List<IProjectProvider>();
 
-        public IProject Build(string path) {
+        public IProject Build(string path, bool newProject) {
             var io = new ProjectIO(Path.GetDirectoryName(path));
             var nfac = new NodeFactory(io);
             foreach (var p in _fileProviders) nfac.Register(p);
 
             var pprovider = FindProvider(path);
+            if (newProject) {
+                pprovider.CreateDefaultContents(Path.GetFileName(path), io, nfac);
+            }
             return pprovider.Create(Path.GetFileName(path), io, nfac);
         }
 

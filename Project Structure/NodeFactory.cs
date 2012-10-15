@@ -20,6 +20,7 @@ namespace ProjectStructure {
         string ProjectName { get; }
         string DefaultContents { get; }
         IProject Create(string path, IProjectIO io, INodeFactory nfac);
+        void CreateDefaultContents(string path, IProjectIO io, INodeFactory nfac);
     }
 
     public class NodeFactory : INodeFactory {
