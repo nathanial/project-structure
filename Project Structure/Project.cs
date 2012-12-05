@@ -67,7 +67,7 @@ namespace ProjectStructure {
             Children.Insert(0, vnode);
 
             if (addToDoc) {
-                _doc.Element("Project").Add(new XElement("Virtual-Folder", path));
+                _doc.Root.Add(new XElement("Virtual-Folder", path));
                 Save();
             }
         }
