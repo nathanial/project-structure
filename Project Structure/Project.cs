@@ -23,7 +23,6 @@ namespace ProjectStructure {
 
     public interface IProject : IFolderNode {
         void AddVirtualFolder(string path);
-        void CheckFilesystem();
         void Save();
     }
 
@@ -53,10 +52,6 @@ namespace ProjectStructure {
 
         public void AddVirtualFolder(string path) {
             InternalAddVirtualFolder(path, true);
-        }
-
-        public void CheckFilesystem() {
-            _io.RunWatchers();
         }
 
         public void Save() {

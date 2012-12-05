@@ -19,15 +19,9 @@ namespace ProjectStructure {
         IList<string> ListFiles(string dirpath = null);
         IList<string> ListDirectories(string dirpath = null);
 
-        void WatchFile(object watcher, string file, FileChangeHandler action);
-        void UnwatchFile(object watcher, string file);
-
-        void WatchDirectory(object watcher, string dirpath, DirectoryChangeHandler action);
-        void UnwatchDirectory(object watcher, string dirpath);
         DateTime FileCreationTime(string file);
         DateTime DirectoryCreationTime(string directory);
 
-        void RunWatchers();
         DateTime DirectoryLastWriteTime(string dirpath);
         DateTime FileLastWriteTime(string filepath);
         bool FileExists(string filepath);
@@ -42,114 +36,12 @@ namespace ProjectStructure {
     }
 
 
-    class WatcherKey : Tuple<object, string> {
-        public object Object { get; set; }
-        public string FilePath { get; set; }
-
-        public WatcherKey(object watcher, string filepath)
-            : base(watcher, filepath) {
-            Object = watcher;
-            FilePath = filepath;
-        }
-
-    }
-
-    interface IWatcher {
-        void Check();
-    }
-
-    class DirectoryWatcher : IWatcher {
-        readonly string _dirpath;
-        readonly DirectoryChangeHandler _handler;
-        readonly IProjectIO _io;
-
-        List<string> _files = new List<string>();
-        List<string> _directories = new List<string>();
-
-        DateTime _lastChanged;
-
-        public DirectoryWatcher(IProjectIO io, string dirpath, DirectoryChangeHandler handler) {
-            _io = io;
-            _dirpath = dirpath;
-            _handler = handler;
-            _lastChanged = _io.DirectoryLastWriteTime(dirpath);
-            _files = _io.ListFiles(dirpath).ToList();
-            _files.Sort();
-            _directories = _io.ListDirectories(dirpath).ToList();
-            _directories.Sort();
-
-        }
-
-        public void Check() {
-            if (!_io.FileExists(_dirpath)) {
-                _handler(new DirectoryChangeEventArgs { Deleted = true });
-                return;
-            }
-            var latest = _io.DirectoryLastWriteTime(_dirpath);
-            if (latest > _lastChanged) {
-                _lastChanged = latest;
-                var newFiles = _io.ListFiles(_dirpath).ToList();
-                var newDirectories = _io.ListDirectories(_dirpath).ToList();
-
-                newFiles.Sort();
-                newDirectories.Sort();
-
-                var addedFiles = AddedFiles(newFiles);
-                var addedDirectories = AddedDirectories(newDirectories);
-
-                _files = newFiles;
-                _directories = newDirectories;
-                _handler(new DirectoryChangeEventArgs {
-                    AddedFiles = addedFiles,
-                    AddedDirectories = addedDirectories
-                });
-            }
-        }
-
-        IList<string> AddedFiles(IEnumerable<string> newFiles) {
-            return newFiles.Where(newFile => !_files.Contains(newFile)).ToList();
-        }
-
-        IList<string> AddedDirectories(IEnumerable<string> newDirectories) {
-            return newDirectories.Where(newDir => !_directories.Contains(newDir)).ToList();
-        }
-    }
-
-    class FileWatcher : IWatcher {
-        readonly IProjectIO _io;
-        readonly string _filepath;
-        readonly FileChangeHandler _handler;
-
-        DateTime _lastChanged;
-
-        public FileWatcher(IProjectIO io, string filepath, FileChangeHandler handler) {
-            _io = io;
-            _filepath = filepath;
-            _handler = handler;
-            _lastChanged = _io.FileLastWriteTime(filepath);
-        }
-
-        public void Check() {
-            if (!_io.FileExists(_filepath)) {
-                _handler(new FileChangeEventArgs(FileChangeType.Deleted, _filepath));
-            } else {
-                var latest = _io.FileLastWriteTime(_filepath);
-                if (latest > _lastChanged) {
-                    _lastChanged = latest;
-                    _handler(new FileChangeEventArgs(FileChangeType.Modified, _filepath));
-                }
-            }
-        }
-    }
-
-
     public class ProjectIO : IProjectIO {
         public event EventHandler<ProjectIOFileLoadedEventArgs> FileLoaded;
 
         readonly string _projectPath;
 
         readonly IDictionary<string, string> _cache = new Dictionary<string, string>();
-        readonly IDictionary<WatcherKey, IWatcher> _watchers = new Dictionary<WatcherKey, IWatcher>();
         readonly IDictionary<string, string> _virtualFolders = new Dictionary<string, string>();
 
         public ProjectIO(string projectPath) {
@@ -272,26 +164,6 @@ namespace ProjectStructure {
             return directories;
         }
 
-        public void WatchFile(object watcher, string file, FileChangeHandler action) {
-            _watchers.Add(new WatcherKey(watcher, file), new FileWatcher(this, file, action));
-        }
-
-        public void UnwatchFile(object watcher, string file) {
-            if(!_watchers.Remove(new WatcherKey(watcher, file))) {
-                throw new Exception("Unable to remove file watcher");
-            }
-        }
-
-        public void WatchDirectory(object watcher, string dirpath, DirectoryChangeHandler action) {
-            _watchers.Add(new WatcherKey(watcher, dirpath), new DirectoryWatcher(this, dirpath, action));
-        }
-
-        public void UnwatchDirectory(object watcher, string dirpath) {
-            if(!_watchers.Remove(new WatcherKey(watcher, dirpath))) {
-                throw new Exception("Unable to remove directory watcher");
-            }
-        }
-
         public DateTime FileCreationTime(string file) {
             return File.GetCreationTime(ResolvePath(file));
         }
@@ -328,12 +200,6 @@ namespace ProjectStructure {
 
         public string RootName {
             get { return Path.GetFileName(_projectPath); }
-        }
-
-        public void RunWatchers() {
-            foreach (var watcher in _watchers.Values.ToArray()) {
-                watcher.Check();
-            }
         }
 
         public void OpenInExplorer(IProjectNode node) {

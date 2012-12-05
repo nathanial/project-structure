@@ -5,3 +5,5 @@ obj/
 *.nupkg
 _ReSharper.*/
 *.dotCover
+*.DotSettings
+packages/

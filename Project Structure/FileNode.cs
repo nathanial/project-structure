@@ -43,7 +43,6 @@ namespace ProjectStructure {
         public FileNode(IProjectIO projectIO, string file) {
             _io = projectIO;
             FilePath = file;
-            _io.WatchFile(this, FilePath, RaiseModified);
             _logger.Trace("Created {0}: {1}", GetType().Name,file);
         }
 
@@ -134,21 +133,17 @@ namespace ProjectStructure {
                 }
             }
             var oldPath = FilePath;
-            _io.UnwatchFile(this, FilePath);
             var newPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), newName);
             _io.Move(FilePath, newPath);
             FilePath = newPath;
-            _io.WatchFile(this, FilePath, RaiseModified);
             Renamed.Raise(this, new FileRenamedEventArgs(this, oldPath, FilePath));
         }
 
         public void Move(string newPath) {
             CheckDeleted();
             var ultimateNewPath = System.IO.Path.Combine(newPath, System.IO.Path.GetFileName(FilePath));
-            _io.UnwatchFile(this, FilePath);
             _io.Move(FilePath, ultimateNewPath);
             FilePath = ultimateNewPath;
-            _io.WatchFile(this, FilePath, RaiseModified);
             Moved.Raise(this, new FileMovedEventArgs(FilePath));
         }
 
@@ -157,7 +152,6 @@ namespace ProjectStructure {
             if (IsDirty) {
                 throw new FileUnsavedChangesException();
             }
-            _io.UnwatchFile(this, FilePath);
             _io.Delete(FilePath);
             IsDeleted = true;
             Deleted.Raise(this, new FileDeletedEventArgs(this));

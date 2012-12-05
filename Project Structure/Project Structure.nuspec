@@ -12,4 +12,7 @@
     <copyright>Copyright 2012</copyright>
     <tags></tags>
   </metadata>
+	<files>
+		<file src="bin\Debug\ProjectStructure.pdb" target="lib\net40" />
+	</files>
 </package>
