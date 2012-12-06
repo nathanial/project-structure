@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -188,16 +189,28 @@ namespace ProjectStructure {
         }
 
         void LoadFilesAndDirectories() {
-            foreach (var subfolder in _io.ListDirectories(_dirpath)) {
+            var directories = _io.ListDirectories(_dirpath);
+            foreach (var directoryNode in Children.OfType<IFolderNode>().ToArray()) {
+                if (directories.Any(x => x != directoryNode.Path)) {
+                    _children.Remove(directoryNode);
+                }
+            }
+            foreach (var newdir in directories) {
                 var child = Children.OfType<IFolderNode>().FirstOrDefault(x => x.Path == _dirpath);
                 if (child != null) {
                     child.Refresh();
                 } else {
-                    AddDirectory(subfolder);
+                    AddDirectory(newdir);
                 }
             }
 
-            foreach (var file in _io.ListFiles(_dirpath)) {
+            var files = _io.ListFiles(_dirpath);
+            foreach (var fileNode in Children.OfType<IFileNode>().ToArray()) {
+                if (files.All(x => x != fileNode.Path)) {
+                    _children.Remove(fileNode);
+                }
+            }
+            foreach (var file in files) {
                 if (Children.OfType<IFileNode>().Any(x => x.Path == file)) {
                     continue;
                 }
@@ -207,6 +220,7 @@ namespace ProjectStructure {
                     _logger.Error("Could not load file {0} because: {1}", file, ex.Message);
                 }
             }
+
         }
 
         void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {

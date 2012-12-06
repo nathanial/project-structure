@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssertExtensions.cs" />
+    <Compile Include="TestNodeFactory.cs" />
     <Compile Include="TestFileNode.cs" />
     <Compile Include="TestFolderNode.cs" />
     <Compile Include="TestProject.cs" />

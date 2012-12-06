@@ -184,13 +184,13 @@ namespace Project_Structure_Tests {
         public void Rename_Should_MoveFolder() {
             var folder = CreateFolder("Bob\\Foo");
             folder.Rename("Hat");
-            _io.Verify(x => x.Move("Bob\\Foo", "Bob\\Hat"),Times.Once());
+            _io.Verify(x => x.Move("Bob\\Foo", "Bob\\Hat"), Times.Once());
         }
 
         [Test]
         public void Rename_Should_UpdateChildPaths() {
             var folder = CreateFolder("Foo");
-            var file = folder.CreateFile("Bar","<Hello>");
+            var file = folder.CreateFile("Bar", "<Hello>");
             Assert.AreEqual("Foo\\Bar", file.Path);
 
             folder.Rename("Baz");
@@ -227,7 +227,7 @@ namespace Project_Structure_Tests {
         public void Move_Should_ThrowPreviewError() {
             var folder = CreateFolder("Foo");
             var ex = new Exception("oops");
-            folder.PreviewMoved += (s,args)=> {
+            folder.PreviewMoved += (s, args) => {
                 args.Error = ex;
             };
             Assert.Throws<Exception>(() => {
@@ -247,7 +247,7 @@ namespace Project_Structure_Tests {
             var folder = CreateFolder("Foo");
             var c1 = folder.CreateFile("C1", "<Hello>");
             var c2 = folder.CreateSubFolder("C2");
-            
+
             Assert.AreEqual(2, folder.Children.Count);
             Assert.AreSame(c1, folder.Children[0]);
             Assert.AreSame(c2, folder.Children[1]);
@@ -262,52 +262,122 @@ namespace Project_Structure_Tests {
 
         [Test]
         public void Refresh_Should_ReloadDirectories() {
-            Assert.Fail();
+            _io.Setup(x => x.ListDirectories("Foo")).Returns(new List<string>());
+
+            var folder = CreateFolder("Foo");
+
+            Assert.AreEqual(0, folder.Children.Count);
+
+            _io.Setup(x => x.ListDirectories("Foo")).Returns(new List<string>() {
+                "Bar",
+                "Baz"
+            });
+
+            folder.Refresh();
+
+            Assert.AreEqual(2, folder.Children.Count);
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "Bar"));
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "Baz"));
+
+            _io.Setup(x => x.ListDirectories("Foo")).Returns(new List<string>() {
+                "Bar",
+            });
+
+            folder.Refresh();
+
+            Assert.AreEqual(1, folder.Children.Count);
+            Assert.AreEqual("Bar", folder.Children[0].Name);
+
         }
 
         [Test]
         public void Refresh_Should_ReloadFiles() {
-            Assert.Fail();
-        }
+            _io.Setup(x => x.ListFiles("Foo")).Returns(new List<string>());
 
-        [Test]
-        public void Path_Should_IOPath() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo");
+
+            Assert.AreEqual(0, folder.Children.Count);
+
+            _io.Setup(x => x.ListFiles("Foo")).Returns(new List<string> {
+                "F1",
+                "F2"
+            });
+
+            folder.Refresh();
+
+            Assert.AreEqual(2, folder.Children.Count);
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "F1"));
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "F2"));
+
+            _io.Setup(x => x.ListFiles("Foo")).Returns(new List<string>() {
+                "F2",
+                "F3",
+                "F4"
+            });
+
+            folder.Refresh();
+
+            Assert.AreEqual(3, folder.Children.Count);
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "F2"));
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "F3"));
+            Assert.IsTrue(folder.Children.Any(x => x.Name == "F4"));
+
         }
 
         [Test]
         public void SetParent_Should_Throw_IfNodeIsRoot() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo", isRoot: true);
+            Assert.Throws<Exception>(() => folder.Parent = new Mock<IFolderNode>().Object);
         }
 
         [Test]
         public void OpenInExplorer_Should_DelegateToIO() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo");
+            folder.OpenInExplorer();
+            _io.Verify(x => x.OpenInExplorer(folder));
         }
 
         [Test]
         public void AddingToChildren_ShouldMoveFilesInOtherFolders() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo");
+            var file = new FileNode(_io.Object, "f1.txt");
+            folder.Children.Add(file);
+            Assert.AreEqual("Foo\\f1.txt", file.Path);
         }
 
         [Test]
         public void AddingToChildren_ShouldSetParentOfChild() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo");
+            var file = new FileNode(_io.Object, "f1.txt");
+            folder.Children.Add(file);
+            Assert.AreEqual(folder, file.Parent);
         }
 
         [Test]
         public void DeletingChild_Should_RemoveFromChildren() {
-            Assert.Fail();
+            var folder = CreateFolder("Foo");
+            var f1 = new FileNode(_io.Object, "f1");
+            var f2 = new FileNode(_io.Object, "f2");
+            folder.Children.Add(f1);
+            folder.Children.Add(f2);
+
+            f1.Delete();
+
+            Assert.AreEqual(1, folder.Children.Count);
+            Assert.AreSame(f2,folder.Children[0]);
         }
 
         [Test]
         public void RemovingChild_Should_UnsetParent() {
-            Assert.Fail();
-        }
+            var folder = CreateFolder("Foo");
+            var f1 = new FileNode(_io.Object, "f1");
+            folder.Children.Add(f1);
 
-        [Test]
-        public void RemovingChild_Should_UnsetDeletedHandler() {
-            Assert.Fail();
+            Assert.AreSame(folder, f1.Parent);
+
+            folder.Children.Remove(f1);
+
+            Assert.IsNull(f1.Parent);
         }
 
         FolderNode CreateFolder(string path, bool isRoot = false) {
