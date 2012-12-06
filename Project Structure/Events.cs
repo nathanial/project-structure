@@ -9,32 +9,6 @@ namespace ProjectStructure {
         }
     }
 
-    public class FolderDeletedEventArgs : EventArgs {
-        public IFolderNode FolderNode { get; set; }
-        public FolderDeletedEventArgs(IFolderNode dir) {
-            FolderNode = dir;
-        }
-    }
-    public class FolderRenamedEventArgs : EventArgs {
-        public IFolderNode Directory { get; set; }
-        public string OldPath { get; set; }
-        public string NewPath { get; set; }
-
-        public FolderRenamedEventArgs(IFolderNode directory, string oldPath, string newPath) {
-            Directory = directory;
-            OldPath = oldPath;
-            NewPath = newPath;
-        }
-    }
-
-    public class FolderMovedEventArgs : EventArgs {
-        public IFolderNode FolderNode { get; private set; }
-        public FolderMovedEventArgs(IFolderNode node) {
-            FolderNode = node;
-        }
-
-    }
-
     public class DirectoryRefreshedEventArgs : EventArgs {
         public IFolderNode Directory { get; set; }
         public DirectoryRefreshedEventArgs(IFolderNode dir) {
@@ -42,44 +16,34 @@ namespace ProjectStructure {
         }
     }
 
-    public class FileSavedEventArgs : EventArgs { }
-    public class FileDirtyTextChangedEventArgs : EventArgs {
-        public string DirtyText { get; set; }
-        public FileDirtyTextChangedEventArgs(string newText) {
-            DirtyText = newText;
+    public class NodeModifiedEventArgs : EventArgs {
+        public byte[] OldData { get; private set; }
+        public byte[] NewData { get; private set; }
+        public NodeModifiedEventArgs(byte[] oldData, byte[] newData) {
+            OldData = oldData;
+            NewData = newData;
         }
     }
 
-    public class FileModifiedEventArgs : EventArgs {
-        public string NewText { get; private set; }
-        public FileModifiedEventArgs(string newText) {
-            NewText = newText;
-        }
-    }
-
-    public class FileMovedEventArgs : EventArgs {
+    public class NodeMovedEventArgs : EventArgs {
+        public string OldPath { get; private set; }
         public string NewPath { get; private set; }
-        public FileMovedEventArgs(string newPath) {
+        public NodeMovedEventArgs(string oldPath, string newPath) {
+            OldPath = oldPath;
             NewPath = newPath;
         }
     }
 
-    public class FileRenamedEventArgs : EventArgs {
-        public IFileNode FileNode { get; private set; }
+    public class NodeRenamedEventArgs : EventArgs {
         public string OldPath { get; private set; }
         public string NewPath { get; private set; }
-        public FileRenamedEventArgs(IFileNode node, string oldpath, string newpath) {
-            FileNode = node;
+        public NodeRenamedEventArgs(string oldpath, string newpath) {
             OldPath = oldpath;
             NewPath = newpath;
         }
     }
 
-    public class FileDeletedEventArgs : EventArgs {
-        public IFileNode FileNode { get; private set; }
-        public FileDeletedEventArgs(IFileNode node) {
-            FileNode = node;
-        }
+    public class NodeDeletedEventArgs : EventArgs {
     }
 
     public class ProjectClosedEventArgs : EventArgs {
@@ -102,28 +66,51 @@ namespace ProjectStructure {
         }
     }
 
-    public class FileChangeEventArgs : EventArgs {
-        public FileChangeType Type { get; set; }
-        public string FilePath { get; set; }
-
-        public FileChangeEventArgs(FileChangeType type, string filePath) {
-            Type = type;
-            FilePath = filePath;
-        }
-    }
-
     public class CouldNotOpenProjectException : Exception { }
-
-    public enum FileChangeType {
-        Modified,
-        Deleted
-    }
-
 
     public delegate void DirectoryChangeHandler(DirectoryChangeEventArgs args);
 
 
-    public delegate void FileChangeHandler(FileChangeEventArgs args);
+    public class PreviewFileEventArgs : EventArgs {
+        public Exception Error { get; set; }
 
+    }
+
+    public class PreviewNodeDeletedEventArgs : PreviewFileEventArgs{}
+    public class PreviewNodeRenamedEventArgs : PreviewFileEventArgs {
+        public string OldPath { get; set; }
+        public string NewPath { get; set; }
+
+        public PreviewNodeRenamedEventArgs(string oldPath, string newPath) {
+            OldPath = oldPath;
+            NewPath = newPath;
+        }
+    }
+    public class PreviewNodeMovedEventArgs : PreviewFileEventArgs {
+        public string OldPath { get; set; }
+        public string NewPath { get; set; }
+        public PreviewNodeMovedEventArgs(string oldPath, string newPath) {
+            OldPath = oldPath;
+            NewPath = newPath;
+        }
+    }
+
+    public class PreviewNodeModifiedEventArgs : PreviewFileEventArgs {
+        public byte[] OldText { get; set; }
+        public byte[] NewText { get; set; }
+        public PreviewNodeModifiedEventArgs(byte[] oldText, byte[] newText) {
+            OldText = oldText;
+            NewText = newText;
+        }
+    }
+
+    public static class PreviewExtensions {
+        public static void RaiseAndValidate<T>(this EventHandler<T> handler, object sender, T args) where T : PreviewFileEventArgs {
+            handler.Raise(sender, args);
+            if (args.Error != null) {
+                throw args.Error;
+            }
+        }
+    }
 
 }

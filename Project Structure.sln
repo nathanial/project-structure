@@ -5,9 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project Structure", "Projec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{FC96D432-C737-492F-8187-D704E85933AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project Structure Tests", "..\Project Structure Tests\Project Structure Tests.csproj", "{CFBA6077-2FEE-4F1F-9965-3E27A879A645}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{7B8F1AE8-1834-4C25-830F-459D3A9DB45D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project Structure Tests", "Project Structure Tests\Project Structure Tests.csproj", "{CFBA6077-2FEE-4F1F-9965-3E27A879A645}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

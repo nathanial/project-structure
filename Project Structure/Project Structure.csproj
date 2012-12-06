@@ -63,6 +63,7 @@
     <Compile Include="EventExtensions.cs" />
     <Compile Include="FileNode.cs" />
     <Compile Include="FolderNode.cs" />
+    <Compile Include="ProjectBuilder.cs" />
     <Compile Include="ProjectIO.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

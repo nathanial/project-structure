@@ -6,10 +6,7 @@ using NLog;
 
 namespace ProjectStructure {
     public interface IFolderNode : IProjectNode {
-        event EventHandler<FolderDeletedEventArgs> Deleted;
-        event EventHandler<FolderRenamedEventArgs> Renamed;
         event EventHandler<DirectoryRefreshedEventArgs> Refreshed;
-        event EventHandler<FolderMovedEventArgs> Moved;
 
         IFolderNode CreateSubFolder(string name);
         IFileNode CreateFile(string name, string content);
@@ -22,10 +19,17 @@ namespace ProjectStructure {
     }
 
     public class FolderNode : IFolderNode {
-        public event EventHandler<FolderDeletedEventArgs> Deleted;
-        public event EventHandler<FolderRenamedEventArgs> Renamed;
-        public event EventHandler<FolderMovedEventArgs> Moved;
         public event EventHandler<DirectoryRefreshedEventArgs> Refreshed;
+
+        public event EventHandler<PreviewNodeDeletedEventArgs> PreviewDeleted;
+        public event EventHandler<PreviewNodeRenamedEventArgs> PreviewRenamed;
+        public event EventHandler<PreviewNodeMovedEventArgs> PreviewMoved;
+        public event EventHandler<PreviewNodeModifiedEventArgs> PreviewModified;
+        
+        public event EventHandler<NodeDeletedEventArgs> Deleted;
+        public event EventHandler<NodeRenamedEventArgs> Renamed;
+        public event EventHandler<NodeMovedEventArgs> Moved;
+        public event EventHandler<NodeModifiedEventArgs> Modified;
 
         readonly IProjectIO _io;
         readonly INodeFactory _nodeFactory;
@@ -49,7 +53,7 @@ namespace ProjectStructure {
         }
 
         public override string ToString() {
-            return string.Format("{0}", _dirpath);
+            return _dirpath;
         }
 
         public string AbsolutePath {
@@ -60,45 +64,40 @@ namespace ProjectStructure {
 
         public string Name {
             get {
-                CheckDeleted();
                 return _isRoot ? _io.RootName : System.IO.Path.GetFileName(_dirpath);
             }
             set {
-                CheckDeleted();
                 Rename(value);
             }
         }
 
         public IFolderNode CreateSubFolder(string name) {
-            CheckDeleted();
             var dirpath = System.IO.Path.Combine(_dirpath, name);
             _io.CreateDirectory(dirpath);
             return AddDirectory(dirpath);
         }
 
         public IFileNode CreateFile(string name, string content) {
-            CheckDeleted();
             var filepath = System.IO.Path.Combine(_dirpath, name);
             _io.CreateFile(filepath, content);
             return AddFile(filepath);
         }
 
         public IFileNode CreateFile(string name, byte[] content) {
-            CheckDeleted();
             var filepath = System.IO.Path.Combine(_dirpath, name);
             _io.CreateFile(filepath, content);
             return AddFile(filepath);
         }
 
         public void Delete() {
-            CheckDeleted();
+            PreviewDeleted.RaiseAndValidate(this, new PreviewNodeDeletedEventArgs());
             _io.Delete(_dirpath);
             IsDeleted = true;
-            Deleted.Raise(this, new FolderDeletedEventArgs(this));
+            Deleted.Raise(this, new NodeDeletedEventArgs());
         }
 
+
         public void Rename(string newName) {
-            CheckDeleted();
             if (string.IsNullOrWhiteSpace(newName)) {
                 throw new InvalidRenameException();
             }
@@ -108,6 +107,7 @@ namespace ProjectStructure {
             if (newName == Name) return;
             var oldpath = _dirpath;
             var rpath = RenamePath(newName);
+            PreviewRenamed.RaiseAndValidate(this, new PreviewNodeRenamedEventArgs(oldpath, rpath));
             _io.Move(_dirpath, rpath);
             _dirpath = rpath;
 
@@ -115,12 +115,15 @@ namespace ProjectStructure {
                 TakeOwnership(child);
             }
 
-            Renamed.Raise(this, new FolderRenamedEventArgs(this, oldpath, _dirpath));
+            Renamed.Raise(this, new NodeRenamedEventArgs(oldpath, _dirpath));
         }
 
         public void Move(string newPath) {
-            CheckDeleted();
             var ultimateNewPath = System.IO.Path.Combine(newPath, System.IO.Path.GetFileName(_dirpath));
+
+            var oldPath = Path;
+            PreviewMoved.RaiseAndValidate(this, new PreviewNodeMovedEventArgs(Path,ultimateNewPath));
+
             _io.Move(_dirpath, ultimateNewPath);
 
             _dirpath = ultimateNewPath;
@@ -128,11 +131,10 @@ namespace ProjectStructure {
             foreach (var child in _children) {
                 TakeOwnership(child);
             }
-            Moved.Raise(this, new FolderMovedEventArgs(this));
+            Moved.Raise(this, new NodeMovedEventArgs(oldPath,Path));
         }
 
         public void Refresh() {
-            CheckDeleted();
             LoadFilesAndDirectories();
             Refreshed.Raise(this, new DirectoryRefreshedEventArgs(this));
         }
@@ -187,20 +189,6 @@ namespace ProjectStructure {
             return node;
         }
 
-        void RaiseFileDeleted(object sender, FileDeletedEventArgs e) {
-            _children.Remove(e.FileNode);
-        }
-
-        void RaiseFolderDeleted(object sender, FolderDeletedEventArgs e) {
-            _children.Remove(e.FolderNode);
-        }
-
-        void CheckDeleted() {
-            if (IsDeleted) {
-                throw new FolderDeletedException();
-            }
-        }
-
         bool SamePath(string p1, string p2) {
             return p1 == p2 || ".\\" + p1 == p2 || p1 == p2 + ".\\";
         }
@@ -237,24 +225,12 @@ namespace ProjectStructure {
                         if (item == null) {
                             throw new NullReferenceException("cannot add 'null' to folder children");
                         }
-                        if (item is IFileNode) {
-                            AddFileNode((IFileNode)item);
-                        } else if (item is IFolderNode) {
-                            AddFolderNode((IFolderNode)item);
-                        } else {
-                            throw new Exception("Not type not recognized");
-                        }
+                        AddNode((IProjectNode) item);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var item in e.OldItems) {
-                        if (item is IFileNode) {
-                            RemoveFileNode((IFileNode)item);
-                        } else if (item is IFolderNode) {
-                            RemoveFolderNode((IFolderNode)item);
-                        } else {
-                            throw new Exception("Not type not recognized");
-                        }
+                        RemoveNode((IProjectNode)item);
                     }
                     break;
                 default:
@@ -262,26 +238,20 @@ namespace ProjectStructure {
             }
         }
 
-        void AddFileNode(IFileNode node) {
+
+        void AddNode(IProjectNode node) {
             TakeOwnership(node);
             node.Parent = this;
-            node.Deleted += RaiseFileDeleted;
+            node.Deleted += HandleNodeDeleted;
         }
 
-        void RemoveFileNode(IFileNode node) {
+        void HandleNodeDeleted(object sender, NodeDeletedEventArgs e) {
+            _children.Remove((IProjectNode)sender);
+        }
+
+        void RemoveNode(IProjectNode node) {
             node.Parent = null;
-            node.Deleted -= RaiseFileDeleted;
-        }
-
-        void AddFolderNode(IFolderNode node) {
-            TakeOwnership(node);
-            node.Parent = this;
-            node.Deleted += RaiseFolderDeleted;
-        }
-
-        void RemoveFolderNode(IFolderNode node) {
-            node.Parent = this;
-            node.Deleted -= RaiseFolderDeleted;
+            node.Deleted -= HandleNodeDeleted;
         }
 
         void TakeOwnership(IProjectNode node) {

@@ -14,6 +14,7 @@ namespace ProjectStructure {
         byte[] CachedReadRaw(string file);
 
         void WriteFile(string filePath, string content);
+        void WriteFile(string filePath, byte[] data);
         void CreateDirectory(string path);
 
         IList<string> ListFiles(string dirpath = null);
@@ -104,6 +105,11 @@ namespace ProjectStructure {
         public void WriteFile(string filePath, string content) {
             CheckPaths(filePath);
             File.WriteAllText(ResolvePath(filePath), content);
+        }
+
+        public void WriteFile(string filePath, byte[] data) {
+            CheckPaths(filePath);
+            File.WriteAllBytes(ResolvePath(filePath), data);
         }
 
         public void CreateDirectory(string path) {

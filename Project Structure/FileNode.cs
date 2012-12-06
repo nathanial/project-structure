@@ -1,42 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using NLog;
 
 namespace ProjectStructure {
     public interface IFileNode : IProjectNode {
-        event EventHandler<FileDeletedEventArgs> Deleted;
-        event EventHandler<FileRenamedEventArgs> Renamed;
-        event EventHandler<FileMovedEventArgs> Moved;
-        event EventHandler<FileModifiedEventArgs> Modified;
-        event EventHandler<FileSavedEventArgs> Saved;
-        event EventHandler<FileDirtyTextChangedEventArgs> DirtyTextChanged;
-
-        string Text { get; }
-        string DirtyText { get; set; }
-
-        byte[] RawBytes { get; }
-
-        bool IsDirty { get; }
-        bool IsDeleted { get; }
-
-        void Save();
-        void Clean();
+        byte[] Data { get; set; }
     }
 
     public class FileNode : IFileNode {
-        public event EventHandler<FileDeletedEventArgs> Deleted;
-        public event EventHandler<FileRenamedEventArgs> Renamed;
-        public event EventHandler<FileMovedEventArgs> Moved;
-        public event EventHandler<FileModifiedEventArgs> Modified;
-        public event EventHandler<FileSavedEventArgs> Saved;
+        public event EventHandler<PreviewNodeDeletedEventArgs> PreviewDeleted;
+        public event EventHandler<PreviewNodeRenamedEventArgs> PreviewRenamed;
+        public event EventHandler<PreviewNodeMovedEventArgs> PreviewMoved;
+        public event EventHandler<PreviewNodeModifiedEventArgs> PreviewModified;
 
-        public event EventHandler<FileDirtyTextChangedEventArgs> DirtyTextChanged;
+        public event EventHandler<NodeDeletedEventArgs> Deleted;
+        public event EventHandler<NodeRenamedEventArgs> Renamed;
+        public event EventHandler<NodeMovedEventArgs> Moved;
+        public event EventHandler<NodeModifiedEventArgs> Modified;
 
         readonly IProjectIO _io;
 
-        readonly ObservableCollection<IProjectNode> _children = new ObservableCollection<IProjectNode>();
+        //This remains forever empty
 
         readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -60,142 +44,66 @@ namespace ProjectStructure {
 
         public string Name {
             get {
-                CheckDeleted();
                 return System.IO.Path.GetFileName(FilePath);
             }
-            set {
-                CheckDeleted();
-                Rename(value);
-                OnRename(value);
-            }
         }
 
-        protected virtual void OnRename(string newName) {
-            
-        }
-
-        public string Text {
+        public byte[] Data {
             get {
-                CheckDeleted();
-                return _io.CachedReadText(FilePath);
-            }
-        }
-
-        public byte[] RawBytes {
-            get {
-                CheckDeleted();
                 return _io.CachedReadRaw(FilePath);
             }
-        }
-
-        string _dirtyText;
-        public string DirtyText {
-            get {
-                CheckDeleted();
-                return IsDirty ? _dirtyText : Text;
-            }
             set {
-                CheckDeleted();
-                _dirtyText = value;
-                IsDirty = true;
-                DirtyTextChanged.Raise(this, new FileDirtyTextChangedEventArgs(DirtyText));
+                var oldData = Data;
+                PreviewModified.RaiseAndValidate(this, new PreviewNodeModifiedEventArgs(oldData, value));
+                _io.WriteFile(FilePath,value);
+                Modified.Raise(this, new NodeModifiedEventArgs(oldData,value));
             }
         }
 
-        bool _isDirty;
-        public bool IsDirty {
-            get {
-                CheckDeleted();
-                return _isDirty;
-            }
-            protected set {
-                _isDirty = value;
-            }
-        }
 
-        public bool IsDeleted { get; private set; }
 
         public void Rename(string newName) {
-            CheckDeleted();
             if (newName == Name) return;
-            if (string.IsNullOrWhiteSpace(newName) ||
-                newName.Contains("\\")) {
-                throw new InvalidRenameException();
-            }
-            if (AcceptableFileExtensions != null) {
-                if (AcceptableFileExtensions.Any(newName.EndsWith)) {
-                    var extension = AcceptableFileExtensions.First(newName.EndsWith);
-                    if (newName == extension) {
-                        throw new InvalidRenameException();
-                    }
-                } else {
-                    throw new InvalidRenameException();
-                }
-            }
+        
             var oldPath = FilePath;
             var newPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), newName);
+
+            PreviewRenamed.RaiseAndValidate(this, new PreviewNodeRenamedEventArgs(oldPath,newPath));
+
             _io.Move(FilePath, newPath);
             FilePath = newPath;
-            Renamed.Raise(this, new FileRenamedEventArgs(this, oldPath, FilePath));
+            Renamed.Raise(this, new NodeRenamedEventArgs(oldPath, FilePath));
         }
 
         public void Move(string newPath) {
-            CheckDeleted();
+            var oldPath = FilePath;
             var ultimateNewPath = System.IO.Path.Combine(newPath, System.IO.Path.GetFileName(FilePath));
+            PreviewMoved.RaiseAndValidate(this, new PreviewNodeMovedEventArgs(FilePath, ultimateNewPath));
             _io.Move(FilePath, ultimateNewPath);
             FilePath = ultimateNewPath;
-            Moved.Raise(this, new FileMovedEventArgs(FilePath));
+            Moved.Raise(this, new NodeMovedEventArgs(oldPath,newPath));
         }
+
+
+        public bool IsDeleted { get; private set; }
 
         public void Delete() {
-            CheckDeleted();
-            if (IsDirty) {
-                throw new FileUnsavedChangesException();
-            }
+            PreviewDeleted.RaiseAndValidate(this, new PreviewNodeDeletedEventArgs());
             _io.Delete(FilePath);
             IsDeleted = true;
-            Deleted.Raise(this, new FileDeletedEventArgs(this));
+            Deleted.Raise(this, new NodeDeletedEventArgs());
         }
 
-        public void Save() {
-            CheckDeleted();
-            if (!IsDirty) return;
-            _io.WriteFile(FilePath, DirtyText);
-            IsDirty = false;
-            Saved.Raise(this, new FileSavedEventArgs());
-        }
 
         public string Path {
             get {
-                CheckDeleted();
                 return FilePath;
             }
         }
 
-        void RaiseModified(FileChangeEventArgs args) {
-            if (args != null && args.Type == FileChangeType.Deleted) {
-                Deleted.Raise(this, new FileDeletedEventArgs(this));
-            } else {
-                Modified.Raise(this, new FileModifiedEventArgs(Text));
-            }
-        }
-
-        protected void CheckDeleted() {
-            if (IsDeleted) {
-                throw new FileNodeDeletedException();
-            }
-        }
-
-        public void Clean() {
-            CheckDeleted();
-            IsDirty = false;
-            RaiseModified(null);
-        }
-
         public ObservableCollection<IProjectNode> Children {
             get {
-                CheckDeleted();
-                return _children;
+                return null;
             }
         }
 
@@ -204,12 +112,6 @@ namespace ProjectStructure {
         }
 
         public IProjectNode Parent { get; set; }
-
-        protected virtual IList<string> AcceptableFileExtensions {
-            get {
-                return null;
-            }
-        }
     }
 
     public class FileNodeDeletedException : Exception { }
