@@ -53,7 +53,7 @@ namespace ProjectStructure {
         }
 
         public override string ToString() {
-            return _dirpath;
+            return Name;
         }
 
         public string AbsolutePath {
@@ -98,12 +98,6 @@ namespace ProjectStructure {
 
 
         public void Rename(string newName) {
-            if (string.IsNullOrWhiteSpace(newName)) {
-                throw new InvalidRenameException();
-            }
-            if (newName.Contains("\\") || newName.Contains("/")) {
-                throw new InvalidRenameException();
-            }
             if (newName == Name) return;
             var oldpath = _dirpath;
             var rpath = RenamePath(newName);
