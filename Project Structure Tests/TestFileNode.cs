@@ -35,7 +35,7 @@ namespace Project_Structure_Tests {
 
 
         [Test]
-        public void GetData_Should_DelegateToIO() {
+        public void GetData_Should_GetFromFile() {
             var file = CreateFile("Foo\\Bar\\Baz");
             var d = file.Data;
             _io.Verify(x => x.CachedReadRaw("Foo\\Bar\\Baz"), Times.Once());
