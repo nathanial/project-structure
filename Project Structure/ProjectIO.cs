@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ProjectStructure {
     public interface IProjectIO {
@@ -34,6 +35,7 @@ namespace ProjectStructure {
         void CreateFile(string filepath, byte[] content);
         byte[] ReadBytes(string path);
         string GetAbsolutePath(string path);
+        Encoding GuessEncoding(string file);
     }
 
 
@@ -52,6 +54,12 @@ namespace ProjectStructure {
         
         public string GetAbsolutePath(string path) {
             return ResolvePath(path);
+        }
+
+        public Encoding GuessEncoding(string file) {
+            using (var reader = new StreamReader(ResolvePath(file))) {
+                return reader.CurrentEncoding;
+            }
         }
 
 

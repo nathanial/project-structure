@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text;
 using NLog;
 
 namespace ProjectStructure {
     public interface IFileNode : IProjectNode {
         byte[] Data { get; set; }
+        string Text { get; set; }
     }
 
     public class FileNode : IFileNode {
@@ -27,7 +30,7 @@ namespace ProjectStructure {
         public FileNode(IProjectIO projectIO, string file) {
             _io = projectIO;
             FilePath = file;
-            _logger.Trace("Created {0}: {1}", GetType().Name,file);
+            _logger.Trace("Created {0}: {1}", GetType().Name, file);
         }
 
         public override string ToString() {
@@ -55,20 +58,24 @@ namespace ProjectStructure {
             set {
                 var oldData = Data;
                 PreviewModified.RaiseAndValidate(this, new PreviewNodeModifiedEventArgs(oldData, value));
-                _io.WriteFile(FilePath,value);
-                Modified.Raise(this, new NodeModifiedEventArgs(oldData,value));
+                _io.WriteFile(FilePath, value);
+                Modified.Raise(this, new NodeModifiedEventArgs(oldData, value));
             }
         }
 
+        public string Text {
+            get { return _io.CachedReadText(FilePath); }
+            set { _io.WriteFile(FilePath, value); }
+        }
 
 
         public void Rename(string newName) {
             if (newName == Name) return;
-        
+
             var oldPath = FilePath;
             var newPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FilePath), newName);
 
-            PreviewRenamed.RaiseAndValidate(this, new PreviewNodeRenamedEventArgs(oldPath,newPath));
+            PreviewRenamed.RaiseAndValidate(this, new PreviewNodeRenamedEventArgs(oldPath, newPath));
 
             _io.Move(FilePath, newPath);
             FilePath = newPath;
@@ -81,7 +88,7 @@ namespace ProjectStructure {
             PreviewMoved.RaiseAndValidate(this, new PreviewNodeMovedEventArgs(FilePath, ultimateNewPath));
             _io.Move(FilePath, ultimateNewPath);
             FilePath = ultimateNewPath;
-            Moved.Raise(this, new NodeMovedEventArgs(oldPath,newPath));
+            Moved.Raise(this, new NodeMovedEventArgs(oldPath, newPath));
         }
 
 
