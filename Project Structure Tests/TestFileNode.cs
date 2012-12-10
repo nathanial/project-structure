@@ -15,11 +15,6 @@ namespace Project_Structure_Tests {
         }
 
         [Test]
-        public void Test_Failure() {
-            Assert.Fail();
-        }
-
-        [Test]
         public void ToString_Returns_FilePath() {
             var file = CreateFile("Foo");
             Assert.AreEqual("Foo",file.ToString());
